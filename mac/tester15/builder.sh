@@ -19,6 +19,7 @@ if [[ ! -f "$VAULT_FILE" ]]; then
 fi
 
 # Confirm settings before running
+# Test to trigger job
 echo "⚡ Starting macOS CI Image Build..."
 echo "  - VM Name: $VM_NAME"
 echo "  - Vault File: $VAULT_FILE"
