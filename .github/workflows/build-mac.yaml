@@ -32,10 +32,10 @@ jobs:
         run: |
           chmod +x builder.sh
           ./builder.sh
-      
+
       - name: Tart push image
-              env:
-                TART_REGISTRY_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-                TART_REGISTRY_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
-              run: |
-                tart push sequoia-tester registry-1.docker.io/${{ secrets.DOCKERHUB_USERNAME }}/macos-testing:latest
+        env:
+          TART_REGISTRY_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          TART_REGISTRY_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          tart push sequoia-tester registry-1.docker.io/${{ secrets.DOCKERHUB_USERNAME }}/macos-testing:latest
