@@ -1,0 +1,26 @@
+name: Build macOS VM (PR)
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          brew install packer tart ansible || true
+
+      - name: Run macOS VM build
+        working-directory: mac/tester15
+        env:
+          VM_NAME: sequoia-tester
+          VAULT_FILE: mac/tester15/vault-fake.yaml
+        run: |
+          chmod +x builder.sh
+          ./builder.sh
