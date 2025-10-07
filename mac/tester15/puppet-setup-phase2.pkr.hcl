@@ -63,45 +63,45 @@ build {
       "echo 'Hostname configuration is now active.'",
 
        # Ensure /etc/facter/facts.d exists
-      "echo admin | sudo -S mkdir -p /etc/facter/facts.d/",
+      #"echo admin | sudo -S mkdir -p /etc/facter/facts.d/",
 
       # Set Puppet role and ensure it's readable
-      "echo 'puppet_role=gecko_t_osx_1500_m_vms' | sudo tee /etc/facter/facts.d/puppet_role.txt > /dev/null",
-      "sudo chmod 644 /etc/facter/facts.d/puppet_role.txt",
+      #"echo 'puppet_role=gecko_t_osx_1500_m_vms' | sudo tee /etc/facter/facts.d/puppet_role.txt > /dev/null",
+      #"sudo chmod 644 /etc/facter/facts.d/puppet_role.txt",
 
       # Ensure /etc/puppet_role exists and matches Facter
-      "echo 'gecko_t_osx_1500_m_vms' | sudo tee /etc/puppet_role > /dev/null",
-      "sudo chmod 644 /etc/puppet_role",
+      #"echo 'gecko_t_osx_1500_m_vms' | sudo tee /etc/puppet_role > /dev/null",
+      #"sudo chmod 644 /etc/puppet_role",
 
       # Remove Facter cache to force reload
-      "echo admin | sudo -S rm -rf /opt/puppetlabs/facter/cache/",
+      #"echo admin | sudo -S rm -rf /opt/puppetlabs/facter/cache/",
 
       # Verify fact is correctly set
-      "echo 'Verifying puppet_role fact...'",
-      "sudo /opt/puppetlabs/bin/facter puppet_role",
+      #"echo 'Verifying puppet_role fact...'",
+      #"sudo /opt/puppetlabs/bin/facter puppet_role",
 
       # Verify /etc/puppet_role exists before continuing
-      "if [ ! -f /etc/puppet_role ]; then",
-      "  echo 'ERROR: /etc/puppet_role was not created. Exiting...'",
-      "  exit 1",
-      "fi",
+      #"if [ ! -f /etc/puppet_role ]; then",
+      #"  echo 'ERROR: /etc/puppet_role was not created. Exiting...'",
+      #"  exit 1",
+      #"fi",
 
       # Small delay to ensure Facter fully loads the new fact
-      "sleep 3",
+      #"sleep 3",
 
       # Download bootstrap script
-      "echo 'Downloading bootstrap_mojave_tester.sh...'",
-      "curl -o /tmp/bootstrap_mojave_tester.sh https://ronin-puppet-package-repo.s3.us-west-2.amazonaws.com/macos/public/common/bootstrap_mojave_tester.sh",
-      "chmod +x /tmp/bootstrap_mojave_tester.sh",
+      #"echo 'Downloading bootstrap_mojave_tester.sh...'",
+      #"curl -o /tmp/bootstrap_mojave_tester.sh https://ronin-puppet-package-repo.s3.us-west-2.amazonaws.com/macos/public/common/bootstrap_mojave_tester.sh",
+      #"chmod +x /tmp/bootstrap_mojave_tester.sh",
 
-      "echo 'Restoring macos_tcc_perms, safaridriver, pipconf and macos_directory_cleaner in role manifest...'",
-      "sudo sed -i '.bak' '/#.*macos_tcc_perms/s/^#//' /Users/admin/Desktop/puppet/ronin_puppet/modules/roles_profiles/manifests/roles/gecko_t_osx_1500_m_vms.pp",
-      "sudo sed -i '.bak' '/#.*safaridriver/s/^#//' /Users/admin/Desktop/puppet/ronin_puppet/modules/roles_profiles/manifests/roles/gecko_t_osx_1500_m_vms.pp",
-      "sudo sed -i '.bak' '/#.*macos_directory_cleaner/s/^#//' /Users/admin/Desktop/puppet/ronin_puppet/modules/roles_profiles/manifests/roles/gecko_t_osx_1500_m_vms.pp",
-      "sudo sed -i '.bak' '/#.*pipconf/s/^#//' /Users/admin/Desktop/puppet/ronin_puppet/modules/roles_profiles/manifests/roles/gecko_t_osx_1500_m_vms.pp",
+      "echo 'Reverting temporary sed patches...'",
+      "sudo sed -i '.bak' '/#.*macos_tcc_perms/s/^#//' /opt/puppet_environments/mozilla-platform-ops/ronin_puppet/modules/roles_profiles/manifests/roles/gecko_t_osx_1500_m_vms.pp",
+      "sudo sed -i '.bak' '/#.*safaridriver/s/^#//' /opt/puppet_environments/mozilla-platform-ops/ronin_puppet/modules/roles_profiles/manifests/roles/gecko_t_osx_1500_m_vms.pp",
+      "sudo sed -i '.bak' '/#.*macos_directory_cleaner/s/^#//' /opt/puppet_environments/mozilla-platform-ops/ronin_puppet/modules/roles_profiles/manifests/roles/gecko_t_osx_1500_m_vms.pp",
+      "sudo sed -i '.bak' '/#.*pipconf/s/^#//' /opt/puppet_environments/mozilla-platform-ops/ronin_puppet/modules/roles_profiles/manifests/roles/gecko_t_osx_1500_m_vms.pp",
 
-      "echo 'Re-running bootstrap_mojave_tester.sh (second attempt after reboot)...'",
-      "echo admin | sudo -S /tmp/bootstrap_mojave_tester.sh || echo 'Puppet run completed with errors, but continuing...'",
+      "echo 'Running run-puppet.sh...'",
+      "echo admin | sudo -S /tmp/run-puppet.sh || echo 'Puppet run completed with errors, but continuing...'",
 
       "sudo rm /var/root/vault.yaml",
 
