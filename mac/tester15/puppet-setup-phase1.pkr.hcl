@@ -76,7 +76,6 @@ build {
       "echo 'Applying temporary sed patches...'",
       "sudo sed -i '.bak' '/macos_tcc_perms/s/^/#/' /opt/puppet_environments/mozilla-platform-ops/ronin_puppet/modules/roles_profiles/manifests/roles/gecko_t_osx_1500_m_vms.pp",
       "sudo sed -i '.bak' '/safaridriver/s/^/#/' /opt/puppet_environments/mozilla-platform-ops/ronin_puppet/modules/roles_profiles/manifests/roles/gecko_t_osx_1500_m_vms.pp",
-      "sudo sed -i '.bak' '/macos_directory_cleaner/s/^/#/' /opt/puppet_environments/mozilla-platform-ops/ronin_puppet/modules/roles_profiles/manifests/roles/gecko_t_osx_1500_m_vms.pp",
       "sudo sed -i '.bak' '/pipconf/s/^/#/' /opt/puppet_environments/mozilla-platform-ops/ronin_puppet/modules/roles_profiles/manifests/roles/gecko_t_osx_1500_m_vms.pp",
 
       "echo 'Running run-puppet.sh...'",
