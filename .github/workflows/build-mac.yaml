@@ -20,7 +20,8 @@ jobs:
         working-directory: mac/tester15
         env:
           VM_NAME: sequoia-tester
-          VAULT_FILE: mac/tester15/vault-fake.yaml
+          VAULT_FILE:  ${{ github.workspace }}/mac/tester15/vault-fake.yaml
         run: |
+          echo "Using VAULT_FILE=$VAULT_FILE"
           chmod +x builder.sh
           ./builder.sh
