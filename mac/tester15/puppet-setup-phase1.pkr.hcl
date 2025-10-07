@@ -99,7 +99,7 @@ build {
       "curl -o /tmp/run-puppet.sh https://ronin-puppet-package-repo.s3.us-west-2.amazonaws.com/macos/public/common/run-puppet.sh",
       "chmod +x /tmp/run-puppet.sh",
 
-      "echo 'Pre-seeding Puppet repo...'",
+      "echo 'Pre-seeding Puppet repo....'",
       "sudo mkdir -p /opt/puppet_environments/mozilla-platform-ops",
       "sudo git clone --branch master https://github.com/mozilla-platform-ops/ronin_puppet.git /opt/puppet_environments/mozilla-platform-ops/ronin_puppet",
 
