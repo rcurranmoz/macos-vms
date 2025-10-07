@@ -45,6 +45,10 @@ build {
       "echo 'Installing Rosetta 2...'",
       "echo admin | sudo -S softwareupdate --install-rosetta --agree-to-license",
 
+      "echo 'Ensuring system paths exist...'",
+      "echo admin | sudo -S mkdir -p /usr/local/bin/",
+      "echo admin | sudo -S chmod 755 /usr/local/bin/",
+
       // Ensure vault.yaml is where run-puppet.sh expects it..
       "echo admin | sudo -S mkdir -p /var/root/",
       "echo admin | sudo -S cp /tmp/vault.yaml /var/root/vault.yaml",
