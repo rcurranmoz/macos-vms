@@ -101,15 +101,15 @@ build {
 
       # At this stage both of these steps are required for the ansible updater to work
 
-      "echo 'Enabling passwordless sudo for admin...'",
-      "echo admin | sudo -S sh -c 'mkdir -p /etc/sudoers.d/ && echo \"admin ALL=(ALL) NOPASSWD: ALL\" | tee /etc/sudoers.d/admin-nopasswd'",
+      # "echo 'Enabling passwordless sudo for admin...'",
+      # "echo admin | sudo -S sh -c 'mkdir -p /etc/sudoers.d/ && echo \"admin ALL=(ALL) NOPASSWD: ALL\" | tee /etc/sudoers.d/admin-nopasswd'",
 
       # Install command-line tools
-      "touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress",
-      "softwareupdate --list | sed -n 's/.*Label: \\(Command Line Tools for Xcode-.*\\)/\\1/p' | xargs -I {} softwareupdate --install '{}'",
-      "rm /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress",
+      # "touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress",
+      # "softwareupdate --list | sed -n 's/.*Label: \\(Command Line Tools for Xcode-.*\\)/\\1/p' | xargs -I {} softwareupdate --install '{}'",
+      # "rm /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress",
 
-      "echo 'Base macOS image has been created with an admin account and Xcode Command Line Tools installed. Ready for SIP disable step.'",
+      #"echo 'Base macOS image has been created with an admin account and Xcode Command Line Tools installed. Ready for SIP disable step.'",
 
     ]
   }
