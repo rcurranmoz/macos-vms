@@ -6,7 +6,7 @@ cltbld_user:
     salt: "490238490238ijfklsdjfkljsdkljf9238490324809238490324023840923849823084092384920klsjdflkdsjfkl"
 
 generic_worker:
-    gecko-t-osx-1400-m-vms:
+    gecko-t-osx-1500-m-vms:
         bugzilla_api_key: "sfjlksdjfdksj2949382402394820"
         livelog_secret: "lfjdslkjflksjlskfjlksj2390849032894239402"
         quarantine_access_token: "sjdflsdkjflksdj9203840923849032"
@@ -21,7 +21,7 @@ worker:
     client_id: "project/releng/generic-worker/datacenter-gecko-t-osx-1500-m-vms"
     access_token: "ksldjflksdjfskldjklsdjf902384903248238423"
     worker_id: "%{facts.networking.hostname}"
-    worker_pool_id: "releng-hardware/gecko-t-osx-1400-m-vms"
+    worker_pool_id: "releng-hardware/gecko-t-osx-1500-m-vms"
     worker_group: "mdc1"
     generic_worker_engine: "simple"
     idle_timeout_secs: 21600
