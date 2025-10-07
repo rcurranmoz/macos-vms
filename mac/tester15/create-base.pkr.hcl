@@ -98,7 +98,7 @@ build {
 
   provisioner "shell" {
     inline = [
-
+      "echo 'Skipping provisioning for this test build.'"
       # At this stage both of these steps are required for the ansible updater to work
 
       # "echo 'Enabling passwordless sudo for admin...'",
