@@ -45,7 +45,7 @@ build {
       "echo 'Installing Rosetta 2...'",
       "echo admin | sudo -S softwareupdate --install-rosetta --agree-to-license",
 
-      # Ensure vault.yaml is where run-puppet.sh expects it..
+      // Ensure vault.yaml is where run-puppet.sh expects it..
       "echo admin | sudo -S mkdir -p /var/root/",
       "echo admin | sudo -S cp /tmp/vault.yaml /var/root/vault.yaml",
 
@@ -62,38 +62,8 @@ build {
       "echo 'Installing Puppet...'",
       "echo admin | sudo -S installer -pkg /tmp/puppet-agent-7.28.0-1-installer.pkg -target /",
 
-      # Ensure the Puppet repo is cloned from the correct branch
-      #"if [ ! -d /Users/admin/Desktop/puppet/ronin_puppet ]; then",
-      #"  echo 'Cloning ronin_puppet repository...'",
-      #"  git clone --branch master https://github.com/mozilla-platform-ops/ronin_puppet.git /Users/admin/Desktop/puppet/ronin_puppet",
-      #"fi",
-
-      # Ensure /etc/facter/facts.d exists
-      #"echo admin | sudo -S mkdir -p /etc/facter/facts.d/",
-
-      # Set Puppet role and ensure it's readable
-      # "echo 'puppet_role=gecko_t_osx_1500_m_vms' | sudo tee /etc/facter/facts.d/puppet_role.txt > /dev/null",
-      # "sudo chmod 644 /etc/facter/facts.d/puppet_role.txt",
-
-      # Ensure /etc/puppet_role exists and matches Facter
       "echo 'gecko_t_osx_1500_m_vms' | sudo tee /etc/puppet_role > /dev/null",
       "sudo chmod 644 /etc/puppet_role",
-
-      # Remove Facter cache to force reload
-      #"echo admin | sudo -S rm -rf /opt/puppetlabs/facter/cache/",
-
-      # Verify fact is correctly set
-      #"echo 'Verifying puppet_role fact...'",
-      #"sudo /opt/puppetlabs/bin/facter puppet_role",
-
-      # Verify /etc/puppet_role exists before continuing
-      #"if [ ! -f /etc/puppet_role ]; then",
-      #"  echo 'ERROR: /etc/puppet_role was not created. Exiting...'",
-      #"  exit 1",
-      #"fi",
-
-      # Small delay to ensure Facter fully loads the new fact
-      #"sleep 3",
 
       "echo 'Downloading run-puppet.sh...'",
       "curl -o /tmp/run-puppet.sh https://ronin-puppet-package-repo.s3.us-west-2.amazonaws.com/macos/public/common/run-puppet.sh",

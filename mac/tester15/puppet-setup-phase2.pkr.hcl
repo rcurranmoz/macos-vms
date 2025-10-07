@@ -48,51 +48,17 @@ build {
 
       "echo 'Setting up hostname auto-config at startup...'",
 
-      # Move the script and set permissions
+      // Move the script and set permissions
       "echo admin | sudo -S mv /tmp/set_hostname.sh /usr/local/bin/set_hostname.sh",
       "echo admin | sudo -S chmod +x /usr/local/bin/set_hostname.sh",
 
-      # Move the launch daemon file and set permissions
+      // Move the launch daemon file and set permissions
       "echo admin | sudo -S mv /tmp/com.mozilla.sethostname.plist /Library/LaunchDaemons/com.mozilla.sethostname.plist",
       "echo admin | sudo -S chmod 644 /Library/LaunchDaemons/com.mozilla.sethostname.plist",
       "echo admin | sudo -S chown root:wheel /Library/LaunchDaemons/com.mozilla.sethostname.plist",
 
-      # Load the daemon so it runs on startup
+      // Load the daemon so it runs on startup
       "echo admin | sudo -S launchctl load /Library/LaunchDaemons/com.mozilla.sethostname.plist",
-
-      "echo 'Hostname configuration is now active.'",
-
-       # Ensure /etc/facter/facts.d exists
-      #"echo admin | sudo -S mkdir -p /etc/facter/facts.d/",
-
-      # Set Puppet role and ensure it's readable
-      #"echo 'puppet_role=gecko_t_osx_1500_m_vms' | sudo tee /etc/facter/facts.d/puppet_role.txt > /dev/null",
-      #"sudo chmod 644 /etc/facter/facts.d/puppet_role.txt",
-
-      # Ensure /etc/puppet_role exists and matches Facter
-      #"echo 'gecko_t_osx_1500_m_vms' | sudo tee /etc/puppet_role > /dev/null",
-      #"sudo chmod 644 /etc/puppet_role",
-
-      # Remove Facter cache to force reload
-      #"echo admin | sudo -S rm -rf /opt/puppetlabs/facter/cache/",
-
-      # Verify fact is correctly set
-      #"echo 'Verifying puppet_role fact...'",
-      #"sudo /opt/puppetlabs/bin/facter puppet_role",
-
-      # Verify /etc/puppet_role exists before continuing
-      #"if [ ! -f /etc/puppet_role ]; then",
-      #"  echo 'ERROR: /etc/puppet_role was not created. Exiting...'",
-      #"  exit 1",
-      #"fi",
-
-      # Small delay to ensure Facter fully loads the new fact
-      #"sleep 3",
-
-      # Download bootstrap script
-      #"echo 'Downloading bootstrap_mojave_tester.sh...'",
-      #"curl -o /tmp/bootstrap_mojave_tester.sh https://ronin-puppet-package-repo.s3.us-west-2.amazonaws.com/macos/public/common/bootstrap_mojave_tester.sh",
-      #"chmod +x /tmp/bootstrap_mojave_tester.sh",
 
       "echo 'Reverting temporary sed patches...'",
       "sudo sed -i '.bak' '/#.*macos_tcc_perms/s/^#//' /opt/puppet_environments/mozilla-platform-ops/ronin_puppet/modules/roles_profiles/manifests/roles/gecko_t_osx_1500_m_vms.pp",
@@ -101,6 +67,7 @@ build {
       "sudo sed -i '.bak' '/#.*pipconf/s/^#//' /opt/puppet_environments/mozilla-platform-ops/ronin_puppet/modules/roles_profiles/manifests/roles/gecko_t_osx_1500_m_vms.pp",
 
       "echo 'Running run-puppet.sh...'",
+      "echo admin | sudo chmod +x /usr/local/bin/run-puppet.sh",
       "echo admin | sudo -S /usr/local/bin/run-puppet.sh || echo 'Puppet run completed with errors, but continuing...'",
 
       "sudo rm /var/root/vault.yaml",
