@@ -48,13 +48,13 @@ build {
       #"echo admin | sudo -S mkdir -p /Library/Frameworks/Python.framework/Versions/3.11/bin/",
       #"echo admin | sudo -S ln -sf /usr/bin/pip3 /Library/Frameworks/Python.framework/Versions/3.11/bin/pip3",
 
-      #"echo 'Ensuring Rosetta 2 is installed...'",
-      #"if /usr/bin/pgrep oahd >/dev/null 2>&1; then",
-      #"  echo 'Rosetta 2 is already installed'",
-      #"else",
-      #"  echo 'Installing Rosetta 2...'",
-      #"  echo admin | sudo -S softwareupdate --install-rosetta --agree-to-license",
-      #"fi",
+      "echo 'Installing Rosetta 2 is installed...'",
+      "if /usr/bin/pgrep oahd >/dev/null 2>&1; then",
+      "  echo 'Rosetta 2 is already installed'",
+      "else",
+      "  echo 'Installing Rosetta 2...'",
+      "  echo admin | sudo -S softwareupdate --install-rosetta --agree-to-license",
+      "fi",
 
       # Ensure vault.yaml is where bootstrap_mojave.sh expects it
       "echo admin | sudo -S mkdir -p /var/root/",
