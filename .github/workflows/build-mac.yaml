@@ -14,7 +14,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          brew install packer tart ansible || true
+          brew tap cirruslabs/cli || true
+          brew install packer cirruslabs/cli/tart ansible || true
 
       - name: Run macOS VM build
         working-directory: mac/tester15
