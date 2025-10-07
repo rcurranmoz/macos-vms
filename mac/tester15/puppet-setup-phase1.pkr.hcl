@@ -42,19 +42,19 @@ build {
   provisioner "shell" {
     inline = [
 
-      "echo 'Ensuring system paths exist...'",
-      "echo admin | sudo -S mkdir -p /usr/local/bin/",
-      "echo admin | sudo -S chmod 755 /usr/local/bin/",
-      "echo admin | sudo -S mkdir -p /Library/Frameworks/Python.framework/Versions/3.11/bin/",
-      "echo admin | sudo -S ln -sf /usr/bin/pip3 /Library/Frameworks/Python.framework/Versions/3.11/bin/pip3",
+      #"echo 'Ensuring system paths exist...'",
+      #"echo admin | sudo -S mkdir -p /usr/local/bin/",
+      #"echo admin | sudo -S chmod 755 /usr/local/bin/",
+      #"echo admin | sudo -S mkdir -p /Library/Frameworks/Python.framework/Versions/3.11/bin/",
+      #"echo admin | sudo -S ln -sf /usr/bin/pip3 /Library/Frameworks/Python.framework/Versions/3.11/bin/pip3",
 
-      "echo 'Ensuring Rosetta 2 is installed...'",
-      "if /usr/bin/pgrep oahd >/dev/null 2>&1; then",
-      "  echo 'Rosetta 2 is already installed'",
-      "else",
-      "  echo 'Installing Rosetta 2...'",
-      "  echo admin | sudo -S softwareupdate --install-rosetta --agree-to-license",
-      "fi",
+      #"echo 'Ensuring Rosetta 2 is installed...'",
+      #"if /usr/bin/pgrep oahd >/dev/null 2>&1; then",
+      #"  echo 'Rosetta 2 is already installed'",
+      #"else",
+      #"  echo 'Installing Rosetta 2...'",
+      #"  echo admin | sudo -S softwareupdate --install-rosetta --agree-to-license",
+      #"fi",
 
       # Ensure vault.yaml is where bootstrap_mojave.sh expects it
       "echo admin | sudo -S mkdir -p /var/root/",
@@ -77,7 +77,7 @@ build {
       "fi",
 
       # Ensure Puppet is in the PATH
-      "export PATH=$PATH:/opt/puppetlabs/bin",
+      #"export PATH=$PATH:/opt/puppetlabs/bin",
 
       # Ensure the Puppet repo is cloned from the correct branch
       "if [ ! -d /Users/admin/Desktop/puppet/ronin_puppet ]; then",
