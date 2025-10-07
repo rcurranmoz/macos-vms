@@ -67,8 +67,9 @@ build {
       "sudo sed -i '.bak' '/#.*pipconf/s/^#//' /opt/puppet_environments/mozilla-platform-ops/ronin_puppet/modules/roles_profiles/manifests/roles/gecko_t_osx_1500_m_vms.pp",
 
       "echo 'Running run-puppet.sh...'",
-      "echo admin | sudo chmod +x /usr/local/bin/run-puppet.sh",
-      "echo admin | sudo -S /usr/local/bin/run-puppet.sh || echo 'Puppet run completed with errors, but continuing...'",
+      "curl -o /tmp/run-puppet.sh https://ronin-puppet-package-repo.s3.us-west-2.amazonaws.com/macos/public/common/run-puppet.sh",
+      "echo admin | sudo chmod +x /tmp/run-puppet.sh",
+      "echo admin | sudo -S /tmp/run-puppet.sh || echo 'Puppet run completed with errors, but continuing...'",
 
       "sudo rm /var/root/vault.yaml",
 
