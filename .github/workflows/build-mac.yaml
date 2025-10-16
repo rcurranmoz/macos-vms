@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  REGISTRY_HOST: registry.local
+  REGISTRY_HOST: 10.49.56.161        # <-- hard-coded IP of m4-194
   REGISTRY_PORT: 5000
   REGISTRY_IMAGE: sequoia-tester
   TART_INSECURE: "--insecure"
@@ -34,6 +34,11 @@ jobs:
           echo "Using VAULT_FILE=$VAULT_FILE"
           chmod +x builder.sh
           ./builder.sh
+
+      - name: Verify registry connectivity
+        run: |
+          echo "Testing http://${{ env.REGISTRY_HOST }}:${{ env.REGISTRY_PORT }}/v2/"
+          curl -v http://${{ env.REGISTRY_HOST }}:${{ env.REGISTRY_PORT }}/v2/ || true
 
       - name: Push built VM to local OCI registry
         if: ${{ success() }}
