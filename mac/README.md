@@ -3,7 +3,7 @@
 This project automates the provisioning of macOS virtual machines for CI using **Packer**, **Tart**, and **Ansible**.
 The process consists of **four phases**, ensuring a fully configured system with Puppet.
 
----
+----
 
 ## 🚀 Overview of the Build Process
 
