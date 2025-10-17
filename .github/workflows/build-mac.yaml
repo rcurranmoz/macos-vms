@@ -3,6 +3,7 @@ name: Build macOS VM (PR and Main)
 on:
   pull_request:
     branches: [ main ]
+    types: [opened, synchronize, reopened]
   push:
     branches: [ main ]
 
@@ -11,7 +12,6 @@ env:
   REGISTRY_PORT: 5000
   REGISTRY_IMAGE: sequoia-tester
   TART_INSECURE: "--insecure"
-  BUILD_TAG: pr-${{ github.event.pull_request.number || github.run_number }}-${{ github.sha }}
 
 jobs:
   build:
@@ -26,42 +26,53 @@ jobs:
           brew tap cirruslabs/cli || true
           brew install packer cirruslabs/cli/tart ansible || true
 
+      # --- DIFFERENTIATION STEP ---
+      - name: Determine vault & tag
+        id: determine
+        run: |
+          if [[ "${GITHUB_EVENT_NAME}" == "push" && "${GITHUB_REF_NAME}" == "main" ]]; then
+            echo "Using real vault for main build"
+            echo "VAULT_FILE=/etc/ronin/vault-real.yaml" >> $GITHUB_ENV
+            echo "ALIAS_TAG=prod-latest" >> $GITHUB_ENV
+            echo "BUILD_TAG=prod-${GITHUB_SHA}" >> $GITHUB_ENV
+          else
+            echo "Using fake vault for PR build"
+            echo "VAULT_FILE=mac/tester15/vault-fake.yaml" >> $GITHUB_ENV
+            echo "ALIAS_TAG=pr-${{ github.event.pull_request.number }}-latest" >> $GITHUB_ENV
+            echo "BUILD_TAG=pr-${{ github.event.pull_request.number }}-${GITHUB_SHA}" >> $GITHUB_ENV
+          fi
+          echo "VAULT_FILE=$VAULT_FILE"
+          echo "BUILD_TAG=$BUILD_TAG"
+          echo "ALIAS_TAG=$ALIAS_TAG"
+
       - name: Run macOS VM build
         working-directory: mac/tester15
         env:
           VM_NAME: sequoia-tester
-          # ✅ Use the relative path since we’re already in mac/tester15
-          VAULT_FILE: ${{ github.ref_name == 'main' && '/etc/ronin/vault-real.yaml' || 'vault-fake.yaml' }}
+          VAULT_FILE: ${{ env.VAULT_FILE }}
         run: |
-          echo "Using VAULT_FILE=$VAULT_FILE"
+          echo "🏗️ Using VAULT_FILE=$VAULT_FILE"
           chmod +x builder.sh
           ./builder.sh
 
       - name: Verify registry connectivity
         run: |
-          echo "Testing http://${{ env.REGISTRY_HOST }}:${{ env.REGISTRY_PORT }}/v2/"
-          curl -v http://${{ env.REGISTRY_HOST }}:${{ env.REGISTRY_PORT }}/v2/ || true
+          curl -fsSL http://${{ env.REGISTRY_HOST }}:${{ env.REGISTRY_PORT }}/v2/ || echo "Registry reachable but empty"
 
       - name: Push built VM to local OCI registry
         if: ${{ success() }}
         env:
           REGISTRY: ${{ env.REGISTRY_HOST }}:${{ env.REGISTRY_PORT }}
           IMAGE: ${{ env.REGISTRY_IMAGE }}
-          TAG: ${{ env.BUILD_TAG }}
         run: |
-          echo "Pushing ${IMAGE}:${TAG} to ${REGISTRY} ..."
-          tart push $TART_INSECURE ${IMAGE} ${REGISTRY}/${IMAGE}:${TAG}
+          echo "🚀 Pushing ${IMAGE}:${BUILD_TAG} ..."
+          tart push $TART_INSECURE ${IMAGE} ${REGISTRY}/${IMAGE}:${BUILD_TAG}
 
-      - name: Tag and push branch-latest alias
+      - name: Tag and push alias (branch-latest or prod-latest)
         if: ${{ success() }}
         env:
           REGISTRY: ${{ env.REGISTRY_HOST }}:${{ env.REGISTRY_PORT }}
           IMAGE: ${{ env.REGISTRY_IMAGE }}
         run: |
-          if [[ "${GITHUB_REF_NAME}" == "main" ]]; then
-            ALIAS_TAG="prod-latest"
-          else
-            ALIAS_TAG="pr-${{ github.event.pull_request.number }}-latest"
-          fi
-          echo "Pushing ${IMAGE}:${ALIAS_TAG} to ${REGISTRY} ..."
+          echo "🪶 Tagging ${IMAGE}:${ALIAS_TAG} ..."
           tart push $TART_INSECURE ${IMAGE} ${REGISTRY}/${IMAGE}:${ALIAS_TAG}
