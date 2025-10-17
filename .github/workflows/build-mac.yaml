@@ -37,7 +37,7 @@ jobs:
             echo "BUILD_TAG=prod-${GITHUB_SHA}" >> $GITHUB_ENV
           else
             echo "Using fake vault for PR build"
-            echo "VAULT_FILE=mac/tester15/vault-fake.yaml" >> $GITHUB_ENV
+            echo "VAULT_FILE=vault-fake.yaml" >> $GITHUB_ENV
             echo "ALIAS_TAG=pr-${{ github.event.pull_request.number }}-latest" >> $GITHUB_ENV
             echo "BUILD_TAG=pr-${{ github.event.pull_request.number }}-${GITHUB_SHA}" >> $GITHUB_ENV
           fi
