@@ -26,10 +26,15 @@ jobs:
           brew tap cirruslabs/cli || true
           brew install packer cirruslabs/cli/tart ansible || true
 
-      # --- DIFFERENTIATION STEP ---
+      # -------------------------------------------------------------
+      # Determine vault, build tag, and alias tag based on event type
+      # -------------------------------------------------------------
       - name: Determine vault & tag
         id: determine
         run: |
+          echo "Event: ${GITHUB_EVENT_NAME}"
+          echo "Ref: ${GITHUB_REF_NAME}"
+
           if [[ "${GITHUB_EVENT_NAME}" == "push" && "${GITHUB_REF_NAME}" == "main" ]]; then
             echo "Using real vault for main build"
             echo "VAULT_FILE=/etc/ronin/vault-real.yaml" >> $GITHUB_ENV
@@ -41,10 +46,27 @@ jobs:
             echo "ALIAS_TAG=pr-${{ github.event.pull_request.number }}-latest" >> $GITHUB_ENV
             echo "BUILD_TAG=pr-${{ github.event.pull_request.number }}-${GITHUB_SHA}" >> $GITHUB_ENV
           fi
-          echo "VAULT_FILE=$VAULT_FILE"
-          echo "BUILD_TAG=$BUILD_TAG"
-          echo "ALIAS_TAG=$ALIAS_TAG"
 
+          echo ""
+          echo "✅ Environment summary:"
+          cat $GITHUB_ENV | grep -E 'VAULT_FILE|BUILD_TAG|ALIAS_TAG'
+          echo ""
+
+      # -------------------------------------------------------------
+      # Optional: Print a masked SHA hash of the vault file (safety check)
+      # -------------------------------------------------------------
+      - name: Log vault hash (masked)
+        run: |
+          if [ -f "${VAULT_FILE}" ]; then
+            sha=$(shasum -a 256 "${VAULT_FILE}" | cut -d' ' -f1)
+            echo "Vault file hash (for verification only): ${sha:0:8}..."
+          else
+            echo "⚠️ Vault file not found at ${VAULT_FILE}"
+          fi
+
+      # -------------------------------------------------------------
+      # Run the actual macOS image build using the vault
+      # -------------------------------------------------------------
       - name: Run macOS VM build
         working-directory: mac/tester15
         env:
@@ -55,24 +77,49 @@ jobs:
           chmod +x builder.sh
           ./builder.sh
 
+      # -------------------------------------------------------------
+      # Verify registry connectivity before pushing
+      # -------------------------------------------------------------
       - name: Verify registry connectivity
         run: |
-          curl -fsSL http://${{ env.REGISTRY_HOST }}:${{ env.REGISTRY_PORT }}/v2/ || echo "Registry reachable but empty"
+          echo "🔍 Testing http://${{ env.REGISTRY_HOST }}:${{ env.REGISTRY_PORT }}/v2/"
+          curl -fsSL http://${{ env.REGISTRY_HOST }}:${{ env.REGISTRY_PORT }}/v2/ || \
+            echo "⚠️ Registry reachable but returned non-200"
 
+      # -------------------------------------------------------------
+      # Push the built image to local OCI registry
+      # -------------------------------------------------------------
       - name: Push built VM to local OCI registry
         if: ${{ success() }}
         env:
           REGISTRY: ${{ env.REGISTRY_HOST }}:${{ env.REGISTRY_PORT }}
           IMAGE: ${{ env.REGISTRY_IMAGE }}
         run: |
-          echo "🚀 Pushing ${IMAGE}:${BUILD_TAG} ..."
+          echo "🚀 Pushing ${IMAGE}:${BUILD_TAG} to ${REGISTRY} ..."
           tart push $TART_INSECURE ${IMAGE} ${REGISTRY}/${IMAGE}:${BUILD_TAG}
 
+      # -------------------------------------------------------------
+      # Tag and push alias (pr-latest or prod-latest)
+      # -------------------------------------------------------------
       - name: Tag and push alias (branch-latest or prod-latest)
         if: ${{ success() }}
         env:
           REGISTRY: ${{ env.REGISTRY_HOST }}:${{ env.REGISTRY_PORT }}
           IMAGE: ${{ env.REGISTRY_IMAGE }}
         run: |
-          echo "🪶 Tagging ${IMAGE}:${ALIAS_TAG} ..."
+          echo "🪶 Tagging ${IMAGE}:${ALIAS_TAG} to ${REGISTRY} ..."
           tart push $TART_INSECURE ${IMAGE} ${REGISTRY}/${IMAGE}:${ALIAS_TAG}
+
+      # -------------------------------------------------------------
+      # Summary
+      # -------------------------------------------------------------
+      - name: Summary
+        if: ${{ success() }}
+        run: |
+          echo ""
+          echo "✅ Build complete!"
+          echo "  Registry: http://${{ env.REGISTRY_HOST }}:${{ env.REGISTRY_PORT }}/v2/"
+          echo "  Image:    ${{ env.REGISTRY_IMAGE }}"
+          echo "  Tag:      $BUILD_TAG"
+          echo "  Alias:    $ALIAS_TAG"
+          echo ""
