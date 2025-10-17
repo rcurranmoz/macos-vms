@@ -30,8 +30,8 @@ jobs:
         working-directory: mac/tester15
         env:
           VM_NAME: sequoia-tester
-          # 🔑 Use real vault when building from main, fake for PRs
-          VAULT_FILE: ${{ github.ref_name == 'main' && '/etc/ronin/vault-real.yaml' || 'mac/tester15/vault-fake.yaml' }}
+          # ✅ Use the relative path since we’re already in mac/tester15
+          VAULT_FILE: ${{ github.ref_name == 'main' && '/etc/ronin/vault-real.yaml' || 'vault-fake.yaml' }}
         run: |
           echo "Using VAULT_FILE=$VAULT_FILE"
           chmod +x builder.sh
@@ -58,7 +58,6 @@ jobs:
           REGISTRY: ${{ env.REGISTRY_HOST }}:${{ env.REGISTRY_PORT }}
           IMAGE: ${{ env.REGISTRY_IMAGE }}
         run: |
-          # Use 'prod-latest' for main, 'pr-###-latest' for PRs
           if [[ "${GITHUB_REF_NAME}" == "main" ]]; then
             ALIAS_TAG="prod-latest"
           else
