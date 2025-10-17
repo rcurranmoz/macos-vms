@@ -1,16 +1,17 @@
-name: Build macOS VM (PR)
+name: Build macOS VM (PR and Main)
 
 on:
   pull_request:
-    branches:
-      - main
+    branches: [ main ]
+  push:
+    branches: [ main ]
 
 env:
-  REGISTRY_HOST: 10.49.56.161        # <-- hard-coded IP of m4-194
+  REGISTRY_HOST: 10.49.56.161
   REGISTRY_PORT: 5000
   REGISTRY_IMAGE: sequoia-tester
   TART_INSECURE: "--insecure"
-  BUILD_TAG: pr-${{ github.event.pull_request.number }}-${{ github.sha }}
+  BUILD_TAG: pr-${{ github.event.pull_request.number || github.run_number }}-${{ github.sha }}
 
 jobs:
   build:
@@ -29,7 +30,8 @@ jobs:
         working-directory: mac/tester15
         env:
           VM_NAME: sequoia-tester
-          VAULT_FILE:  ${{ github.workspace }}/mac/tester15/vault-fake.yaml
+          # 🔑 Use real vault when building from main, fake for PRs
+          VAULT_FILE: ${{ github.ref_name == 'main' && '/etc/ronin/vault-real.yaml' || 'mac/tester15/vault-fake.yaml' }}
         run: |
           echo "Using VAULT_FILE=$VAULT_FILE"
           chmod +x builder.sh
@@ -50,12 +52,17 @@ jobs:
           echo "Pushing ${IMAGE}:${TAG} to ${REGISTRY} ..."
           tart push $TART_INSECURE ${IMAGE} ${REGISTRY}/${IMAGE}:${TAG}
 
-      - name: Tag and push PR-latest alias
+      - name: Tag and push branch-latest alias
         if: ${{ success() }}
         env:
           REGISTRY: ${{ env.REGISTRY_HOST }}:${{ env.REGISTRY_PORT }}
           IMAGE: ${{ env.REGISTRY_IMAGE }}
         run: |
-          PR_TAG="pr-${{ github.event.pull_request.number }}-latest"
-          echo "Pushing ${IMAGE}:${PR_TAG} to ${REGISTRY} ..."
-          tart push $TART_INSECURE ${IMAGE} ${REGISTRY}/${IMAGE}:${PR_TAG}
+          # Use 'prod-latest' for main, 'pr-###-latest' for PRs
+          if [[ "${GITHUB_REF_NAME}" == "main" ]]; then
+            ALIAS_TAG="prod-latest"
+          else
+            ALIAS_TAG="pr-${{ github.event.pull_request.number }}-latest"
+          fi
+          echo "Pushing ${IMAGE}:${ALIAS_TAG} to ${REGISTRY} ..."
+          tart push $TART_INSECURE ${IMAGE} ${REGISTRY}/${IMAGE}:${ALIAS_TAG}
