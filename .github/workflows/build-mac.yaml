@@ -26,10 +26,8 @@ jobs:
           brew tap cirruslabs/cli || true
           brew install packer cirruslabs/cli/tart ansible || true
 
-      # -------------------------------------------------------------
-      # Determine vault, build tag, and alias tag based on event type
-      # -------------------------------------------------------------
-      - name: Determine vault & tag
+      # Decide tags and which vault to use
+      - name: Determine vault & tags
         id: determine
         run: |
           echo "Event: ${GITHUB_EVENT_NAME}"
@@ -37,24 +35,31 @@ jobs:
 
           if [[ "${GITHUB_EVENT_NAME}" == "push" && "${GITHUB_REF_NAME}" == "main" ]]; then
             echo "Using real vault for main build"
-            echo "VAULT_FILE=/etc/ronin/vault-real.yaml" >> $GITHUB_ENV
             echo "ALIAS_TAG=prod-latest" >> $GITHUB_ENV
             echo "BUILD_TAG=prod-${GITHUB_SHA}" >> $GITHUB_ENV
+            # We'll set VAULT_FILE after we stage it into the workspace (next step)
           else
             echo "Using fake vault for PR build"
-            echo "VAULT_FILE=vault-fake.yaml" >> $GITHUB_ENV
+            echo "VAULT_FILE=${{ github.workspace }}/mac/tester15/vault-fake.yaml" >> $GITHUB_ENV
             echo "ALIAS_TAG=pr-${{ github.event.pull_request.number }}-latest" >> $GITHUB_ENV
             echo "BUILD_TAG=pr-${{ github.event.pull_request.number }}-${GITHUB_SHA}" >> $GITHUB_ENV
           fi
 
           echo ""
-          echo "✅ Environment summary:"
-          cat $GITHUB_ENV | grep -E 'VAULT_FILE|BUILD_TAG|ALIAS_TAG'
+          echo "✅ Environment so far:"
+          cat $GITHUB_ENV | grep -E 'VAULT_FILE|BUILD_TAG|ALIAS_TAG' || true
           echo ""
 
-      # -------------------------------------------------------------
-      # Optional: Print a masked SHA hash of the vault file (safety check)
-      # -------------------------------------------------------------
+      # Stage the real vault into the workspace (only on push→main)
+      - name: Stage real vault into workspace
+        if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+        run: |
+          # Copy from the runner's secure location into the workspace
+          install -m 600 /etc/ronin/vault-real.yaml "${GITHUB_WORKSPACE}/mac/tester15/vault-real.yaml"
+          # Point VAULT_FILE at the staged workspace file (where Packer will read it)
+          echo "VAULT_FILE=${GITHUB_WORKSPACE}/mac/tester15/vault-real.yaml" >> $GITHUB_ENV
+
+      # Optional: masked hash to confirm we’re reading a file without leaking content
       - name: Log vault hash (masked)
         run: |
           if [ -f "${VAULT_FILE}" ]; then
@@ -64,9 +69,7 @@ jobs:
             echo "⚠️ Vault file not found at ${VAULT_FILE}"
           fi
 
-      # -------------------------------------------------------------
-      # Run the actual macOS image build using the vault
-      # -------------------------------------------------------------
+      # Build
       - name: Run macOS VM build
         working-directory: mac/tester15
         env:
@@ -77,18 +80,12 @@ jobs:
           chmod +x builder.sh
           ./builder.sh
 
-      # -------------------------------------------------------------
-      # Verify registry connectivity before pushing
-      # -------------------------------------------------------------
       - name: Verify registry connectivity
         run: |
           echo "🔍 Testing http://${{ env.REGISTRY_HOST }}:${{ env.REGISTRY_PORT }}/v2/"
           curl -fsSL http://${{ env.REGISTRY_HOST }}:${{ env.REGISTRY_PORT }}/v2/ || \
             echo "⚠️ Registry reachable but returned non-200"
 
-      # -------------------------------------------------------------
-      # Push the built image to local OCI registry
-      # -------------------------------------------------------------
       - name: Push built VM to local OCI registry
         if: ${{ success() }}
         env:
@@ -98,9 +95,6 @@ jobs:
           echo "🚀 Pushing ${IMAGE}:${BUILD_TAG} to ${REGISTRY} ..."
           tart push $TART_INSECURE ${IMAGE} ${REGISTRY}/${IMAGE}:${BUILD_TAG}
 
-      # -------------------------------------------------------------
-      # Tag and push alias (pr-latest or prod-latest)
-      # -------------------------------------------------------------
       - name: Tag and push alias (branch-latest or prod-latest)
         if: ${{ success() }}
         env:
@@ -110,9 +104,6 @@ jobs:
           echo "🪶 Tagging ${IMAGE}:${ALIAS_TAG} to ${REGISTRY} ..."
           tart push $TART_INSECURE ${IMAGE} ${REGISTRY}/${IMAGE}:${ALIAS_TAG}
 
-      # -------------------------------------------------------------
-      # Summary
-      # -------------------------------------------------------------
       - name: Summary
         if: ${{ success() }}
         run: |
