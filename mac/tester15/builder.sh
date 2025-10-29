@@ -51,9 +51,11 @@ packer build -force \
   -var="vault_file=$VAULT_FILE" \
   puppet-setup-phase1.pkr.hcl
 
-# Phase 4: Puppet setup phase 2 (uses vm_name)
+# Phase 4: Puppet setup phase 2 (uses vm_name and vault_file)
 packer build -force \
   -var="vm_name=$VM_NAME" \
+  puppet-setup-phase2.pkr.hcl
+  -var="vault_file=$VAULT_FILE" \
   puppet-setup-phase2.pkr.hcl
 
 echo "✅ Build process completed successfully!"
