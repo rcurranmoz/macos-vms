@@ -36,20 +36,22 @@ echo "  - VM Name: $VM_NAME"
 echo "  - Vault File: $VAULT_FILE"
 echo ""
 
-# Run the packer builds with explicit variable passing
-packer build -force \
-  -var="vm_name=$VM_NAME" \
-  create-base.pkr.hcl
+# Run the packer builds
+# Phase 1: Create base (no vm_name variable in this file)
+packer build -force create-base.pkr.hcl
 
+# Phase 2: Disable SIP (uses vm_name)
 packer build -force \
   -var="vm_name=$VM_NAME" \
   disable-sip.pkr.hcl
 
+# Phase 3: Puppet setup phase 1 (uses vm_name and vault_file)
 packer build -force \
   -var="vm_name=$VM_NAME" \
   -var="vault_file=$VAULT_FILE" \
   puppet-setup-phase1.pkr.hcl
 
+# Phase 4: Puppet setup phase 2 (uses vm_name)
 packer build -force \
   -var="vm_name=$VM_NAME" \
   puppet-setup-phase2.pkr.hcl
